@@ -6,24 +6,32 @@ import {WebSocketMessage} from './web-socket-message';
   providedIn: 'root'
 })
 export class WebSocketClientService {
-  private ws = null;
+  private ws: WebSocket = null;
   private events: { [key: string]: Subject<any>; } = {};
 
   get opened(): boolean {
-    return !!this.ws;
+    return this.readyState === WebSocket.OPEN;
+  }
+
+  get readyState(): number|null {
+    return this.ws ? this.ws.readyState : null;
+  }
+
+  get url(): string|null {
+    return this.ws ? this.ws.url : null;
   }
 
   public onOpen = new Subject<Event>();
   public onClose = new Subject<Event>();
-  public onError = new Subject<Error>();
+  public onError = new Subject<Event|Error>();
   public onTextMessage = new Subject<string>();
   public onMessage = new Subject<WebSocketMessage>();
 
   constructor() { }
 
-  public open( url ) {
+  public open( url: string, protocols?: string|string[] ) {
     try {
-      this.ws = new WebSocket(url);
+      this.ws = protocols ? new WebSocket(url, protocols) : new WebSocket(url);
       this.initEvents();
     } catch (e) {
       this.onError.next(e);
@@ -48,8 +56,8 @@ export class WebSocketClientService {
     }
   }
 
-  public on( action: string ): Subject<any> {
-    const subject = new Subject<any>();
+  public on<T>( action: string ): Subject<T> {
+    const subject = new Subject<T>();
     this.events[action] = subject;
     return subject;
   }

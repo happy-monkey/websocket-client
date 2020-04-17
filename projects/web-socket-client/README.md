@@ -77,5 +77,9 @@ constructor( public ws: WebSocketClientService ) {
     if ( this.ws.opened ) {
       console.log( 'WebSocket is ready' );
     }
+    
+    // Properties
+    const url = this.ws.url;
+    const readyState = this.ws.readyState;
 }
 ```

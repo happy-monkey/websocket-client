@@ -15,7 +15,7 @@ export class AppComponent {
 
     // Subscribe to events
     this.ws.onOpen.subscribe(() => {
-      console.log( 'Server is ready');
+      console.log( 'Server is opened');
     });
 
     this.ws.onError.subscribe((error) => {
@@ -26,22 +26,29 @@ export class AppComponent {
       console.log( 'Connection closed' );
     });
 
-    this.ws.on('action_name').subscribe(( data ) => {
+    this.ws.on<ServerReadyResponse>('server_ready').subscribe(( data ) => {
       console.log( 'Action received from server with data : ', data );
     });
 
     // Connect to server
-    this.ws.open('ws://localhost:8282');
-
-    // Send action
-    this.ws.send('action', {foo: 'bar'});
-
-    // Close connection
-    this.ws.close();
-
-    // Check if client is connected
-    if ( this.ws.opened ) {
-      console.log( 'WebSocket is ready' );
-    }
+    this.ws.open('ws://localhost:8282/');
   }
+}
+
+export class Player {
+  id: number;
+  id_lang: number;​​
+  id_user: number|null;
+  tag: string;
+  login: string;
+  avatar: string|null;
+  diamonds: number;
+  trophies: number;
+  created_at: string;
+  updated_at: string|null;
+}
+
+export class ServerReadyResponse {
+  player: Player;
+  token: string;
 }
