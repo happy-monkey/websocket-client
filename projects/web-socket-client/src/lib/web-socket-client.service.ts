@@ -16,6 +16,7 @@ export class WebSocketClientService {
   public onOpen = new Subject<Event>();
   public onClose = new Subject<Event>();
   public onError = new Subject<Error>();
+  public onTextMessage = new Subject<string>();
   public onMessage = new Subject<WebSocketMessage>();
 
   constructor() { }
@@ -29,11 +30,15 @@ export class WebSocketClientService {
     }
   }
 
-  public send( action: string, data: any = null, room = null ) {
+  public sendText( payload: string ) {
     if ( this.ws ) {
-      const message = new WebSocketMessage(action, data, room);
-      this.ws.send(JSON.stringify(message.toJSON()));
+      this.ws.send(payload);
     }
+  }
+
+  public send( action: string, data: any = null, room = null ) {
+    const message = new WebSocketMessage(action, data, room);
+    this.sendText(JSON.stringify(message.toJSON()));
   }
 
   public close() {
@@ -78,6 +83,8 @@ export class WebSocketClientService {
       if ( this.events[message.action] ) {
         this.events[message.action].next(message.data);
       }
+    } else {
+      this.onTextMessage.next(payload);
     }
   }
 }

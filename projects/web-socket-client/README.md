@@ -30,6 +30,10 @@ export class AppModule { }
 
 ## Example 
 ```typescript
+...
+import {WebSocketClientService} from 'web-socket-client';
+
+...
 constructor( public ws: WebSocketClientService ) {
 
     // Subscribe to events
@@ -45,15 +49,26 @@ constructor( public ws: WebSocketClientService ) {
       console.log( 'Connection closed' );
     });
     
-    this.ws.on('action_name').subscribe(( data ) => {
-      console.log( 'Action received from server with data : ', data );
+    this.ws.onMessage.subscribe(( message: WebSocketMessage ) => {
+        console.log( message.action, message.data );
+    });
+
+    this.ws.on('action_name').subscribe(( data: any ) => {
+      console.log( 'Action received from server with data :', data );
     });
     
+    this.ws.onTextMessage.subscribe(( payload: string ) => {
+      console.log( 'Text message received :', payload );
+    });
+
     // Connect to server
     this.ws.open('ws://localhost:8282');
     
     // Send action
     this.ws.send('action', {foo: 'bar'});
+
+    // Send plain text message
+    this.ws.sendText('plain text message');
     
     // Close connection
     this.ws.close();
