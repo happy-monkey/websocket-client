@@ -30,12 +30,8 @@ export class WebSocketClientService {
   constructor() { }
 
   public open( url: string, protocols?: string|string[] ) {
-    try {
-      this.ws = protocols ? new WebSocket(url, protocols) : new WebSocket(url);
-      this.initEvents();
-    } catch (e) {
-      this.onError.next(e);
-    }
+    this.ws = protocols ? new WebSocket(url, protocols) : new WebSocket(url);
+    this.initEvents();
   }
 
   public sendText( payload: string ) {
@@ -74,13 +70,13 @@ export class WebSocketClientService {
     };
 
     this.ws.onopen = (event) => {
-      this.onOpen.next(event);
       this.ws.onclose = (e) => {
         this.onClose.next(e);
       };
       this.ws.onmessage = (e) => {
         this.handleMessage(e.data);
       };
+      this.onOpen.next(event);
     };
   }
 
