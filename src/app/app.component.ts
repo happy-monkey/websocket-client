@@ -13,9 +13,18 @@ export class AppComponent {
     public ws: WebSocketClientService
   ) {
 
+    this.ws.onMessage.subscribe((message) => {
+      console.log( 'new message', message.data );
+    });
+
     // Subscribe to events
     this.ws.onOpen.subscribe(() => {
       console.log( 'Server is opened');
+      this.ws.send('test', 'Salut').then((data) => {
+        console.log( 'result from test : ', data );
+      }).catch((err) => {
+        console.warn(err.message);
+      });
     });
 
     this.ws.onError.subscribe((error) => {
@@ -31,7 +40,7 @@ export class AppComponent {
     });
 
     // Connect to server
-    this.ws.open('ws://localhost:8282/');
+    this.ws.open('ws://localhost:8282/test?login=salut !');
   }
 }
 

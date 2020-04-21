@@ -8,10 +8,14 @@ export class WebSocketMessage {
     return this.messageData;
   }
 
+  get isCallback(): boolean {
+    return !!this.callback;
+  }
+
   static parseJSON( payload: string ): WebSocketMessage|null {
     try {
       const message = JSON.parse(payload);
-      return new WebSocketMessage(message.action, message.data);
+      return new WebSocketMessage(message.action, message.data, null, message.callback);
     } catch (e) {
       return null;
     }
@@ -20,7 +24,8 @@ export class WebSocketMessage {
   constructor(
     private messageAction: string = '',
     private messageData: any = null,
-    private messageRoom: string = ''
+    private messageRoom: string = '',
+    private callback: string = ''
   ) {
   }
 
@@ -28,7 +33,8 @@ export class WebSocketMessage {
     return {
       action: this.messageAction,
       data: this.messageData,
-      room: this.messageRoom
+      room: this.messageRoom,
+      callback: this.callback
     };
   }
 }

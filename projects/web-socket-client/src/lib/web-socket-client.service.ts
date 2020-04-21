@@ -40,9 +40,20 @@ export class WebSocketClientService {
     }
   }
 
-  public send( action: string, data: any = null, room = null ) {
-    const message = new WebSocketMessage(action, data, room);
-    this.sendText(JSON.stringify(message.toJSON()));
+  public send<T>( action: string, data: any = null, room = null ) {
+    return new Promise<T>((resolve, reject) => {
+      const callbackID = Math.random().toString(36).substr(2, 9);
+      const message = new WebSocketMessage(action, data, room, callbackID);
+      this.on<T>(callbackID + '_success').subscribe((result) => {
+        this.off(callbackID + '_*');
+        resolve(result);
+      });
+      this.on<any>(callbackID + '_error').subscribe((err) => {
+        this.off(callbackID + '_*');
+        reject(new Error(err.message));
+      });
+      this.sendText(JSON.stringify(message.toJSON()));
+    });
   }
 
   public close() {
@@ -59,8 +70,11 @@ export class WebSocketClientService {
   }
 
   public off( action: string ) {
-    if ( this.events[action] ) {
-      delete this.events[action];
+    const regex = new RegExp(action, 'i');
+    for ( const name in this.events ) {
+      if ( this.events.hasOwnProperty(name) && name.match(regex) ) {
+        delete this.events[name];
+      }
     }
   }
 
@@ -83,7 +97,9 @@ export class WebSocketClientService {
   private handleMessage( payload: string ) {
     const message = WebSocketMessage.parseJSON(payload);
     if ( message ) {
-      this.onMessage.next(message);
+      if ( !message.isCallback ) {
+        this.onMessage.next(message);
+      }
       if ( this.events[message.action] ) {
         this.events[message.action].next(message.data);
       }
