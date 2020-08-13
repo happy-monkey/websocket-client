@@ -9,6 +9,9 @@ export class WebSocketClientService {
   private ws: WebSocket = null;
   private events: { [key: string]: Subject<any>; } = {};
 
+  private lastWsUrl: string = null;
+  private lastWsProtocols: string|string[] = null;
+
   get opened(): boolean {
     return this.readyState === WebSocket.OPEN;
   }
@@ -30,8 +33,20 @@ export class WebSocketClientService {
   constructor() { }
 
   public open( url: string, protocols?: string|string[] ) {
+    this.lastWsUrl = url;
+    this.lastWsProtocols = protocols || null;
     this.ws = protocols ? new WebSocket(url, protocols) : new WebSocket(url);
     this.initEvents();
+  }
+
+  public reopen( timeout?: number ) {
+    if ( !this.lastWsUrl ) {
+      throw new Error('Method open has never been called');
+    }
+
+    setTimeout( () => {
+      this.open(this.lastWsUrl, this.lastWsProtocols);
+    }, timeout);
   }
 
   public sendText( payload: string ) {
