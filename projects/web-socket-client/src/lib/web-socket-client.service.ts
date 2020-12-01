@@ -102,6 +102,12 @@ export class WebSocketClientService {
     }
   }
 
+  public unsubscribeAll() {
+    for ( const name in this.events ) {
+      this.off(name);
+    }
+  }
+
   private initEvents() {
     this.ws.onerror = (error) => {
       this.onError.next(error);
